@@ -19,10 +19,16 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+
 # Notebooks shell out to the `feast` CLI. Under `make lab` the venv is already
 # active, but under nbconvert / CI it is not, and the call dies with
 # FileNotFoundError: 'feast'. Put the running interpreter's bin dir on PATH so
 # the CLI resolves the same way in every execution context.
 _BIN = Path(sys.executable).parent
-if str(_BIN) not in os.environ.get("PATH", "").split(os.pathsep):
-    os.environ["PATH"] = f"{_BIN}{os.pathsep}{os.environ.get('PATH', '')}"
+for candidate in [
+    _REPO_ROOT / ".venv" / "Scripts",
+    _REPO_ROOT / ".venv" / "bin",
+    _BIN,
+]:
+    if candidate.exists() and str(candidate) not in os.environ.get("PATH", "").split(os.pathsep):
+        os.environ["PATH"] = f"{candidate}{os.pathsep}{os.environ.get('PATH', '')}"
